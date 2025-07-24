@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spelling Bee 🇳🇵 Class 8–10</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f4f8, #e0e7ed);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    h1 {
+      margin-top: 2rem;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    .card {
+      background: #fff;
+      padding: 2rem;
+      margin: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      transition: max-height 0.5s ease, padding 0.5s ease;
+      overflow: hidden;
+    }
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background: #004a99;
+      transform: scale(1.05);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    input[type="text"], input[type="password"] {
+      width: calc(100% - 2rem);
+      padding: 1rem;
+      font-size: 1rem;
+      margin: 1rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      transition: box-shadow 0.3s ease;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      outline: none;
+      box-shadow: 0 0 8px #0066cc;
+      border-color: #0066cc;
+    }
+    #result {
+      font-size: 1.25rem;
+      min-height: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    #score {
+      color: #555;
+      margin-top: 1rem;
+    }
+    footer {
+      margin-bottom: 2rem;
+      color: #777;
+      text-align: center;
+    }
+    #welcome {
+      margin-top: 2rem;
+      font-size: 1.25rem;
+      color: #222;
+    }
+    #leaderboardTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    #leaderboardTable th, #leaderboardTable td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    #leaderboardTable th {
+      background-color: #eee;
+    }
+    #adminToggleBtn {
+      background: #004a99;
+      margin: 1rem auto 0 auto;
+      font-weight: 700;
+      display: inline-block;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #adminToggleBtn:hover {
+      background: #003366;
+    }
+    #adminArea {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.6s ease, opacity 0.6s ease, padding 0.6s ease;
+      width: 90%;
+      max-width: 600px;
+    }
+    #adminArea.open {
+      max-height: 1000px; /* big enough to show content */
+      opacity: 1;
+      padding-top: 1rem;
+      padding-bottom: 2rem;
+    }
+    #adminPanel {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    #adminPanel label {
+      font-weight: bold;
+    }
+    #wordAddInput {
+      margin-top: 1rem;
+      width: calc(100% - 2rem);
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      transition: box-shadow 0.3s ease;
+    }
+    #wordAddInput:focus {
+      outline: none;
+      box-shadow: 0 0 8px #0066cc;
+      border-color: #0066cc;
+    }
+    #addWordMsg {
+      min-height: 1.5rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔠 Spelling Bee (Class 8–10)</h1>
+
+  <!-- Name input card -->
+  <div class="card" id="nameCard">
+    <label for="nameInput">Enter your name to start:</label><br />
+    <input type="text" id="nameInput" placeholder="Your name" />
+    <button id="startBtn">Start</button>
+  </div>
+
+  <!-- Main game card -->
+  <div class="card" id="gameCard" style="display:none;">
+    <p id="welcome"></p>
+    <button id="playBtn">🔊 Play Word</button>
+    <button id="resoundBtn" disabled>🔁 Resound Word (3 left)</button>
+    <br />
+    <input
+      type="text"
+      id="userInput"
+      placeholder="Type what you heard…"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <div>
+      <button id="checkBtn">Check</button>
+      <button id="skipBtn">Skip</button>
+    </div>
+    <p id="result"></p>
+    <p id="score">Score: 0 / 0</p>
+  </div>
+
+  <!-- Admin toggle button -->
+  <button id="adminToggleBtn" aria-expanded="false" aria-controls="adminArea">Admin Panel 🔐</button>
+
+  <!-- Admin area with login and panel -->
+  <div id="adminArea" aria-hidden="true">
+    <div class="card" id="adminLoginCard">
+      <label for="adminPassInput">Enter Admin Passcode to see Leaderboard:</label><br />
+      <input type="password" id="adminPassInput" placeholder="Passcode" />
+      <button id="adminLoginBtn">Login</button>
+    </div>
+
+    <div class="card" id="adminPanel" style="display:none;">
+      <h2>📋 Leaderboard</h2>
+      <table id="leaderboardTable">
+        <thead>
+          <tr><th>Rank</th><th>Name</th><th>Score</th><th>Total Words</th></tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+
+      <h3>Add New Word to Game</h3>
+      <input type="text" id="wordAddInput" placeholder="Enter new word" />
+      <button id="addWordBtn">Add Word</button>
+      <p id="addWordMsg" style="color:green;"></p>
+
+      <button id="logoutAdminBtn" style="margin-top:1rem;">Logout Admin Panel</button>
+    </div>
+  </div>
+
+  <footer>Presented and made by Dixit Neupane 🇳🇵 — host it anywhere, learn anytime!</footer>
+
+  <script>
+    // Load words from localStorage or fallback to default
+    const defaultWords = [
+      "ability","absence","accept","accumulate","adapt","adventure","adverse","advocate","affect","agile",
+      "ambiguous","ample","ancient","analyze","annual","anticipate","apparent","approach","aptitude","arrogant",
+      "articulate","ascend","aspect","assess","assimilate","astonish","attain","audible","authentic","balance",
+      "barren","beneficial","boisterous","brevity","candid","capable","cascade","cautious","chaotic","clarify",
+      "coherent","commence","comply","comprehend","conceal","concur","conflict","conspicuous","contradict","corrupt",
+      "credible","culminate","cumbersome","curious","daunting","dedicate","defiant","detrimental","diligent","diminish",
+      "discreet","dispel","diverse","docile","dominant","dormant","eloquent","empathy","endeavor","engross",
+      "enhance","entail","equity","erratic","essential","evade","exemplify","exorbitant","fabricate","feasible",
+      "fluctuate","formidable","frugal","furtive","gallant","genuine","gratify","gregarious","hamper","harass",
+      "heed","hesitate","hostile","humble","hypothesis","illuminate","imminent","impartial","impede","implore",
+      "imply","incentive","inclusive","indignant","inevitable","innate","insinuate","intrepid","inundate","invincible",
+      "jovial","judicious","keen","lament","lenient","lucid","magnanimous","malignant","mediate","meticulous",
+      "morbid","mundane","negligent","noxious","obsolete","ominous","onerous","opulent","paradox","perilous",
+      "pertinent","pinnacle","plausible","poignant","pragmatic","precocious","prodigy","profuse","quaint","rancid",
+      "reclusive","refute","remorse","resilient","rudimentary","sagacious","salient","sanction","saturate","scarce",
+      "scrutinize","serene","skeptical","solace","somber","staunch","subtle","suppress","tangible","tedious",
+      "tentative","transient","trepidation","trivial","undermine","unique","unprecedented","utilize","venerable","verbose",
+      "versatile","vigilant","vindicate","vulnerable","wary","whimsical","zealous","adaptation","admission","advantage",
+      "alleviate","ambiguity","analysis","announcement","anticipation","apparatus","application","approval","architecture","argument",
+      "arrangement","artificial","assessment","association","assumption","attachment","attendance","attraction","authority","automation",
+      "availability","background","bargain","behaviour","beneficiary","boundary","breakthrough","capability","capital","category",
+      "celebration","challenge","characteristic","circumstance","civilization","collaboration","combination","committee","communication","community",
+      "competition","completion","complication","composition","comprehension","concentration","concept","conclusion","consequence","consideration",
+      "construction","consultation","contribution","convenience","corporation","correction","correspondence","creation","criticism","curiosity",
+      "declaration","dedication","definition","deliberation","demonstration","description","destruction","determination","development","difference",
+      "difficulty","dimension","direction","discovery","discussion","distribution","education","effectiveness","efficiency","emphasis",
+      "employment","encouragement","environment","establishment","evaluation","examination","excitement","experience","explanation","expression",
+      "facilitation","familiarity","foundation","generation","government","guidance","happiness","identification","implementation","improvement",
+      "incorporation","independence","information","initiative","innovation","instruction","integration","introduction","investment","leadership",
+      "legislation","limitation","management","marketing","measurement","membership","motivation","negotiation","observation","operation",
+      "opportunity","organization","participation","performance","perspective","possession","preparation","presentation","preservation","priority",
+      "probability","procedure","production","profession","progression","promotion","proportion","protection","publication","qualification",
+      "recognition","recommendation","reduction","reflection","refrigeration","regulation","relationship","reputation","requirement","reservation",
+      "resolution","respect","responsibility","restoration","restriction","revolution","satisfaction","situation","society","solution",
+      "specification","stimulation","strategy","structure","submission","suggestion","supervision","suspicion","technology","television",
+      "tradition","transaction","translation","transportation","variation","verification","vibration","vocabulary","volunteering","warranty"
+    ];
+
+    let defaultWordsList = JSON.parse(localStorage.getItem("spellingBeeWords")) || defaultWords.slice();
+
+    // Game state variables
+    let currentWordIndex = 0;
+    let score = 0;
+    let totalWordsUsed = 0;
+    let userName = "";
+    const MAX_RESOUNDS = 3;
+    let resoundCount = 0;
+
+    // DOM elements
+    const nameCard = document.getElementById("nameCard");
+    const nameInput = document.getElementById("nameInput");
+    const startBtn = document.getElementById("startBtn");
+    const gameCard = document.getElementById("gameCard");
+    const welcomeText = document.getElementById("welcome");
+    const playBtn = document.getElementById("playBtn");
+    const resoundBtn = document.getElementById("resoundBtn");
+    const userInput = document.getElementById("userInput");
+    const checkBtn = document.getElementById("checkBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const result = document.getElementById("result");
+    const scoreDisplay = document.getElementById("score");
+
+    // Admin DOM
+    const adminToggleBtn = document.getElementById("adminToggleBtn");
+    const adminArea = document.getElementById("adminArea");
+    const adminLoginCard = document.getElementById("adminLoginCard");
+    const adminPassInput = document.getElementById("adminPassInput");
+    const adminLoginBtn = document.getElementById("adminLoginBtn");
+    const adminPanel = document.getElementById("adminPanel");
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const wordAddInput = document.getElementById("wordAddInput");
+    const addWordBtn = document.getElementById("addWordBtn");
+    const addWordMsg = document.getElementById("addWordMsg");
+    const logoutAdminBtn = document.getElementById("logoutAdminBtn");
+
+    // Admin passcode
+    const ADMIN_PASS = "Nepal123321";
+
+    // Admin toggle open/close with animation
+    adminToggleBtn.addEventListener("click", () => {
+      const isOpen = adminArea.classList.toggle("open");
+      adminToggleBtn.setAttribute("aria-expanded", isOpen);
+      adminArea.setAttribute("aria-hidden", !isOpen);
+    });
+
+    // Audio play function for the current word
+    function playWordAudio(word) {
+      if (!word) return;
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    }
+
+    // Update score display
+    function updateScore() {
+      scoreDisplay.textContent = `Score: ${score} / ${totalWordsUsed}`;
+    }
+
+    // Reset inputs and result message
+    function resetInput() {
+      userInput.value = "";
+      result.textContent = "";
+      resoundBtn.disabled = true;
+      resoundCount = 0;
+      resoundBtn.textContent = `🔁 Resound Word (${MAX_RESOUNDS} left)`;
+    }
+
+    // Start game
+    startBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("Please enter your name to start.");
+        return;
+      }
+      userName = name;
+      welcomeText.textContent = `Welcome, ${userName}!`;
+      nameCard.style.display = "none";
+      gameCard.style.display = "block";
+      currentWordIndex = 0;
+      score = 0;
+      totalWordsUsed = 0;
+      updateScore();
+      resetInput();
+    });
+
+    // Play word button
+    playBtn.addEventListener("click", () => {
+      if (currentWordIndex >= defaultWordsList.length) {
+        alert("No more words available. Thanks for playing!");
+        return;
+      }
+      playWordAudio(defaultWordsList[currentWordIndex]);
+      resoundCount = 0;
+      resoundBtn.disabled = false;
+      resoundBtn.textContent = `🔁 Resound Word (${MAX_RESOUNDS} left)`;
+      userInput.value = "";
+      userInput.focus();
+      result.textContent = "";
+    });
+
+    // Resound button
+    resoundBtn.addEventListener("click", () => {
+      if (resoundCount < MAX_RESOUNDS && currentWordIndex < defaultWordsList.length) {
+        playWordAudio(defaultWordsList[currentWordIndex]);
+        resoundCount++;
+        let left = MAX_RESOUNDS - resoundCount;
+        resoundBtn.textContent = `🔁 Resound Word (${left} left)`;
+        if (resoundCount >= MAX_RESOUNDS) {
+          resoundBtn.disabled = true;
+        }
+      }
+    });
+
+    // Check answer
+    checkBtn.addEventListener("click", () => {
+      if (currentWordIndex >= defaultWordsList.length) {
+        alert("No more words available. Thanks for playing!");
+        return;
+      }
+      const userAnswer = userInput.value.trim().toLowerCase();
+      if (!userAnswer) {
+        alert("Please enter your spelling.");
+        return;
+      }
+      totalWordsUsed++;
+      const correctWord = defaultWordsList[currentWordIndex].toLowerCase();
+
+      if (userAnswer === correctWord) {
+        score++;
+        result.style.color = "green";
+        result.textContent = "Correct! 🎉";
+      } else {
+        result.style.color = "red";
+        result.textContent = `Incorrect! The correct spelling is: "${correctWord}"`;
+      }
+      updateScore();
+      currentWordIndex++;
+      resoundBtn.disabled = true;
+      userInput.value = "";
+      userInput.focus();
+
+      // Save score for leaderboard (update or add)
+      saveScore(userName, score, totalWordsUsed);
+    });
+
+    // Skip button
+    skipBtn.addEventListener("click", () => {
+      if (currentWordIndex >= defaultWordsList.length) {
+        alert("No more words available. Thanks for playing!");
+        return;
+      }
+      totalWordsUsed++;
+      result.style.color = "blue";
+      result.textContent = `Skipped! The correct spelling was: "${defaultWordsList[currentWordIndex]}"`;
+      updateScore();
+      currentWordIndex++;
+      resoundBtn.disabled = true;
+      userInput.value = "";
+      userInput.focus();
+
+      // Save score for leaderboard (update or add)
+      saveScore(userName, score, totalWordsUsed);
+    });
+
+    // Save score to leaderboard in localStorage
+    function saveScore(name, score, total) {
+      let leaderboard = JSON.parse(localStorage.getItem("spellingBeeLeaderboard") || "[]");
+      const existingIndex = leaderboard.findIndex((item) => item.name === name);
+      if (existingIndex !== -1) {
+        if (score > leaderboard[existingIndex].score || total > leaderboard[existingIndex].total) {
+          leaderboard[existingIndex] = { name, score, total };
+        }
+      } else {
+        leaderboard.push({ name, score, total });
+      }
+      localStorage.setItem("spellingBeeLeaderboard", JSON.stringify(leaderboard));
+    }
+
+    // Show leaderboard inside admin panel
+    function showLeaderboard() {
+      const leaderboard = JSON.parse(localStorage.getItem("spellingBeeLeaderboard") || "[]");
+      leaderboard.sort((a, b) => b.score - a.score || a.total - b.total);
+      leaderboardBody.innerHTML = "";
+      leaderboard.forEach((player, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${player.name}</td>
+          <td>${player.score}</td>
+          <td>${player.total}</td>
+        `;
+        leaderboardBody.appendChild(tr);
+      });
+    }
+
+    // Admin login button
+    adminLoginBtn.addEventListener("click", () => {
+      const pass = adminPassInput.value.trim();
+      if (pass === ADMIN_PASS) {
+        adminPanel.style.display = "block";
+        adminLoginCard.style.display = "none";
+        showLeaderboard();
+        addWordMsg.textContent = "";
+        wordAddInput.value = "";
+      } else {
+        alert("Incorrect admin passcode!");
+      }
+      adminPassInput.value = "";
+    });
+
+    // Admin logout
+    logoutAdminBtn.addEventListener("click", () => {
+      adminPanel.style.display = "none";
+      adminLoginCard.style.display = "block";
+      addWordMsg.textContent = "";
+      wordAddInput.value = "";
+    });
+
+    // Add new word button (admin)
+    addWordBtn.addEventListener("click", () => {
+      const newWord = wordAddInput.value.trim().toLowerCase();
+      if (!newWord) {
+        alert("Please enter a word to add.");
+        return;
+      }
+      if (!/^[a-z]+$/.test(newWord)) {
+        alert("Please enter only letters a-z, no spaces or special characters.");
+        return;
+      }
+      if (defaultWordsList.includes(newWord)) {
+        alert("Word already exists in the list.");
+        return;
+      }
+      defaultWordsList.push(newWord);
+      localStorage.setItem("spellingBeeWords", JSON.stringify(defaultWordsList));
+      addWordMsg.style.color = "green";
+      addWordMsg.textContent = `Word "${newWord}" added successfully!`;
+      wordAddInput.value = "";
+    });
+  </script>
+</body>
+</html>
